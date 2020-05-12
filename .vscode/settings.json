@@ -1,0 +1,15 @@
+{
+    "files.associations": {
+        "genesis.h": "c",
+        "font.h": "c",
+        "types.h": "c",
+        "resources.h": "c",
+        "limits": "cpp",
+        "stdlib.h": "c",
+        "tiles.h": "c",
+        "sprites.h": "c",
+        "floor.h": "c",
+        "type_traits": "c",
+        "cmath": "c"
+    }
+}

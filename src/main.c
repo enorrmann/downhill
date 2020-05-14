@@ -54,4 +54,9 @@ static void handleInput()
     {
         TILES_right();
     }
+    if (value & BUTTON_A)
+    {
+        TILES_scroll_up();
+    }
+
 }

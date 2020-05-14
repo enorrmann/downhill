@@ -21,3 +21,4 @@ void TILES_up();
 void TILES_down();
 void TILES_halt();
 void TILES_right();
+void TILES_scroll_up();

@@ -12,14 +12,14 @@ u8 delay = 1;
 u8 delay_count = 0;
 s8 direccion = D_NULL;
 u8 vuelta = 0;
-s8 piso = 27;
+s8 piso = 25;
 u8 x;
 
 u8 tiles_y[NUM_TILES];
 
 void TILES_init()
 {
-     VDP_setBackgroundColor(55);
+    VDP_setBackgroundColor(55);
     for (int i = 0; i < NUM_TILES; i++)
     {
         tiles_y[i] = piso;
@@ -78,6 +78,18 @@ void TILES_right()
     //if (piso < 27) piso++;
     direccion = D_RIGHT;
 }
+void TILES_scroll_up()
+{
+    for (int i = 0; i <= ULTIMO_TILE; i++)
+    {
+        if (tiles_y[i] >= piso)
+        {
+            tiles_y[i]--;
+            VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_WHITE), i, tiles_y[i]);
+        }
+    }
+    piso = tiles_y[ULTIMO_TILE];
+}
 void TILES_move()
 {
     //if (direccion == D_NULL)        return;
@@ -90,6 +102,7 @@ void TILES_move()
         {
             piso += direccion;
         }
+
         tiles_y[ULTIMO_TILE] = piso;
 
         //VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_BLACK), ULTIMO_TILE, tiles_y[ULTIMO_TILE]);
@@ -113,7 +126,7 @@ void TILES_move()
     {
         delay_count++;
     }
-    //pinta_posicion();
+    pinta_posicion();
 }
 static void pinta_posicion()
 {

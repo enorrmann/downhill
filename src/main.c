@@ -26,6 +26,7 @@ int main()
 
         //VDP_setHorizontalScroll(PLAN_A, -offset);
         VDP_showFPS(TRUE);
+        VDP_showCPULoad();
         //SPR_update();
         handleInput();
         TILES_move();

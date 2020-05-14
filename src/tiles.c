@@ -1,14 +1,14 @@
 #include <tiles.h>
 
-#define TILE_WHITE 5
-#define TILE_BLACK 1
+#define TILE_WHITE 9
+#define TILE_BLACK 0
 
 #define NUM_TILES 41
 #define ULTIMO_TILE 40
 
 static void pinta_posicion();
 
-u8 delay = 3;
+u8 delay = 1;
 u8 delay_count = 0;
 s8 direccion = D_NULL;
 u8 vuelta = 0;
@@ -19,10 +19,11 @@ u8 tiles_y[NUM_TILES];
 
 void TILES_init()
 {
+     VDP_setBackgroundColor(55);
     for (int i = 0; i < NUM_TILES; i++)
     {
         tiles_y[i] = piso;
-        VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL1, 1, 0, 0, TILE_WHITE), i, tiles_y[i]);
+        VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_WHITE), i, tiles_y[i]);
     }
     x = NUM_TILES - 1;
     tiles_y[x] = piso;
@@ -38,8 +39,8 @@ void TILES_move_()
         vuelta++;
         x = NUM_TILES - vuelta - 1;
         tiles_y[x] = tiles_y[x + 1];
-        VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL1, 1, 0, 0, TILE_BLACK), x, tiles_y[x - 1]);
-        VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL1, 1, 0, 0, TILE_WHITE), x, tiles_y[x + 1]);
+        VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_BLACK), x, tiles_y[x - 1]);
+        VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_WHITE), x, tiles_y[x + 1]);
 
         if (x == 5)
         {
@@ -91,17 +92,20 @@ void TILES_move()
         }
         tiles_y[ULTIMO_TILE] = piso;
 
-        //VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL1, 1, 0, 0, TILE_BLACK), ULTIMO_TILE, tiles_y[ULTIMO_TILE]);
+        //VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_BLACK), ULTIMO_TILE, tiles_y[ULTIMO_TILE]);
         //tiles_y[ULTIMO_TILE] = piso;
-        //VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL1, 1, 0, 0, TILE_WHITE), ULTIMO_TILE, tiles_y[ULTIMO_TILE]);
+        //VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_WHITE), ULTIMO_TILE, tiles_y[ULTIMO_TILE]);
 
         for (int i = 0; i < NUM_TILES - 1; i++)
         {
             if (tiles_y[i] != tiles_y[i + 1] && direccion != D_NULL)
             {
-                VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL1, 1, 0, 0, TILE_BLACK), i, tiles_y[i]);
+                if (tiles_y[i] < tiles_y[i + 1])
+                {
+                    VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_BLACK), i, tiles_y[i]);
+                }
                 tiles_y[i] = tiles_y[i + 1];
-                VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL1, 1, 0, 0, TILE_WHITE), i, tiles_y[i]);
+                VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_WHITE), i, tiles_y[i]);
             }
         }
     }

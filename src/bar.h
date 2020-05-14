@@ -1,8 +1,6 @@
 #include <genesis.h>
 #define D_UP -1
-#define D_NULL 0
 #define D_DOWN 1
-#define D_RIGHT 2
 
 typedef struct _Bar
 {
@@ -17,7 +15,3 @@ typedef struct _Bar
 
 void TILES_init();
 void TILES_move();
-void TILES_up();
-void TILES_down();
-void TILES_halt();
-void TILES_right();

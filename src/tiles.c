@@ -1,99 +1,126 @@
 #include <tiles.h>
 
-#define TILE_WHITE 15
+#define TILE_WHITE 5
 #define TILE_BLACK 1
-#define D_UP -1
-#define D_DOWN 1
-#define NUM_BARS 20
-#define BAR_SPACING 2
 
+#define NUM_TILES 41
+#define ULTIMO_TILE 40
 
-static void pinta_posicion(Bar *aBar);
-static void TILE_move(Bar *aBar);
+static void pinta_posicion();
 
-u8 delay = 8;
+u8 delay = 3;
 u8 delay_count = 0;
+s8 direccion = D_NULL;
+u8 vuelta = 0;
+s8 piso = 27;
+u8 x;
 
-Bar bars[NUM_BARS];
+u8 tiles_y[NUM_TILES];
 
 void TILES_init()
 {
-    int initial_x = 0;
-    int initial_travel = 4;
-
-    for (int i = 0; i < NUM_BARS; i++)
+    for (int i = 0; i < NUM_TILES; i++)
     {
-        if (initial_travel > 9)
-        {
-            initial_travel = 5;
-        }
-        bars[i].tile_direction = D_DOWN;
-        bars[i].x = (initial_x++) * BAR_SPACING;
-        bars[i].y = 20;
-        bars[i].tile_y = 10;
-        bars[i].tile_y_travel = initial_travel++;
+        tiles_y[i] = piso;
+        VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL1, 1, 0, 0, TILE_WHITE), i, tiles_y[i]);
     }
+    x = NUM_TILES - 1;
+    tiles_y[x] = piso;
 }
-void TILES_move()
+
+void TILES_move_()
 {
-    if (delay_count == delay)
+
+    if (delay_count >= delay)
     {
+
         delay_count = 0;
-        for (int i = 0; i < NUM_BARS; i++)
+        vuelta++;
+        x = NUM_TILES - vuelta - 1;
+        tiles_y[x] = tiles_y[x + 1];
+        VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL1, 1, 0, 0, TILE_BLACK), x, tiles_y[x - 1]);
+        VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL1, 1, 0, 0, TILE_WHITE), x, tiles_y[x + 1]);
+
+        if (x == 5)
         {
-            TILE_move(&bars[i]);
+            vuelta = 0;
+            tiles_y[NUM_TILES - 1]++;
+        }
+        if (tiles_y[x] == 20)
+        {
+            vuelta = 0;
+            tiles_y[NUM_TILES - 1] = 2;
         }
     }
     else
     {
         delay_count++;
     }
+    pinta_posicion();
 }
-static void TILE_move(Bar *aBar)
+void TILES_halt()
 {
-    if (aBar->tile_direction == D_DOWN)
+    direccion = D_NULL;
+}
+void TILES_up()
+{
+    //if (piso > 0) piso--;
+    direccion = D_UP;
+}
+void TILES_down()
+{
+    //if (piso < 27) piso++;
+    direccion = D_DOWN;
+}
+void TILES_right()
+{
+    //if (piso < 27) piso++;
+    direccion = D_RIGHT;
+}
+void TILES_move()
+{
+    //if (direccion == D_NULL)        return;
+
+    if (delay_count >= delay)
     {
-        if (aBar->tile_y < aBar->y)
+        delay_count = 0;
+
+        if (direccion == D_UP || direccion == D_DOWN)
         {
-            VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL1, 0, 0, 0, TILE_BLACK), aBar->x, aBar->tile_y);
-            aBar->tile_y++;
+            piso += direccion;
         }
-        else
+        tiles_y[ULTIMO_TILE] = piso;
+
+        //VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL1, 1, 0, 0, TILE_BLACK), ULTIMO_TILE, tiles_y[ULTIMO_TILE]);
+        //tiles_y[ULTIMO_TILE] = piso;
+        //VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL1, 1, 0, 0, TILE_WHITE), ULTIMO_TILE, tiles_y[ULTIMO_TILE]);
+
+        for (int i = 0; i < NUM_TILES - 1; i++)
         {
-            aBar->tile_y--;
-            aBar->tile_direction = D_UP;
+            if (tiles_y[i] != tiles_y[i + 1] && direccion != D_NULL)
+            {
+                VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL1, 1, 0, 0, TILE_BLACK), i, tiles_y[i]);
+                tiles_y[i] = tiles_y[i + 1];
+                VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL1, 1, 0, 0, TILE_WHITE), i, tiles_y[i]);
+            }
         }
     }
-    else // going UP
+    else
     {
-        if (aBar->tile_y >= (aBar->y - aBar->tile_y_travel))
-        {
-            aBar->tile_y--;
-        }
-        else
-        {
-            VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL1, 0, 0, 0, TILE_BLACK), aBar->x, aBar->tile_y);
-            aBar->tile_y++;
-            aBar->tile_direction = D_DOWN;
-        }
+        delay_count++;
     }
-
-    VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL1, 1, 0, 0, TILE_WHITE), aBar->x, aBar->tile_y);
-
-    // pinta_posicion(aBar);
+    //pinta_posicion();
 }
-static void pinta_posicion(Bar *aBar)
+static void pinta_posicion()
 {
-    //declaramos una cadena de caracteres
-    //sprintf : pasa un valor numerico(posx / posy) a caracteres y los copia
-    //en la cadena anterior. %4d alinea a la derecha, importante para al pasar
-    //de numeros negativos a positivos todo salga correctamente
-
     char cadena1[32];
-    sprintf(cadena1, "y:  %4d", aBar->tile_y);
+    sprintf(cadena1, "x:  %4d", x);
     VDP_drawText(cadena1, 2, 23);
 
     char cadena2[32];
-    sprintf(cadena2, "direccion:  %4d", aBar->tile_direction);
+    sprintf(cadena2, "tiles_y[x]:  %4d", tiles_y[x]);
     VDP_drawText(cadena2, 2, 24);
+
+    sprintf(cadena2, "piso:  %4d", piso);
+    VDP_drawText(cadena2, 2, 25);
 }

@@ -2,105 +2,122 @@
 
 #define TILE_WHITE 9
 #define TILE_BLACK 0
+//#define TILE_DIAG_UP 6
+#define TILE_DIAG 6
+#define TILE_DIAG_DOWN 7
 
-#define NUM_TILES 41
-#define ULTIMO_TILE 40
+#define NUM_TILES 3
+#define ULTIMO_TILE NUM_TILES - 1
+
+#define TECHO 10
+#define PISO 27
 
 static void pinta_posicion();
+static void avanzar();
+static int wait();
 
-u8 delay = 1;
+const u32 tileDiag[8] =
+    {
+        0xF0000000,
+        0xFF000000,
+        0xFFF00000,
+        0xFFFF0000,
+        0xFFFFF000,
+        0xFFFFFF00,
+        0xFFFFFFF0,
+        0xFFFFFFFF};
+
+u8 delay = 6;
 u8 delay_count = 0;
 s8 direccion = D_NULL;
 u8 vuelta = 0;
 s8 piso = 25;
-u8 x;
+u8 rotate = 0;
 
 u8 tiles_y[NUM_TILES];
+s8 tiles_direction[NUM_TILES];
+s8 tiles_spahe[2];
 
 void TILES_init()
 {
-    VDP_setBackgroundColor(55);
+    //VDP_setBackgroundColor(55);
+    VDP_loadTileData((const u32 *)tileDiag, TILE_DIAG, 1, 0);
+    //VDP_loadTileData((const u32 *)tileDiagDown, TILE_DIAG_DOWN, 1, 0);
+    tiles_spahe[0] = TILE_WHITE;
+    tiles_spahe[1] = TILE_DIAG;
+
     for (int i = 0; i < NUM_TILES; i++)
     {
         tiles_y[i] = piso;
-        VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_WHITE), i, tiles_y[i]);
+        tiles_direction[i] = 0; //
+        //VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_WHITE), i, tiles_y[i]);
     }
-    x = NUM_TILES - 1;
-    tiles_y[x] = piso;
+
+    tiles_y[ULTIMO_TILE] = piso;
+    tiles_direction[ULTIMO_TILE] = 0;
 }
 
-void TILES_move_()
-{
-
-    if (delay_count >= delay)
-    {
-
-        delay_count = 0;
-        vuelta++;
-        x = NUM_TILES - vuelta - 1;
-        tiles_y[x] = tiles_y[x + 1];
-        VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_BLACK), x, tiles_y[x - 1]);
-        VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_WHITE), x, tiles_y[x + 1]);
-
-        if (x == 5)
-        {
-            vuelta = 0;
-            tiles_y[NUM_TILES - 1]++;
-        }
-        if (tiles_y[x] == 20)
-        {
-            vuelta = 0;
-            tiles_y[NUM_TILES - 1] = 2;
-        }
-    }
-    else
-    {
-        delay_count++;
-    }
-    pinta_posicion();
-}
 void TILES_halt()
 {
     direccion = D_NULL;
 }
 void TILES_up()
 {
-    //if (piso > 0) piso--;
     direccion = D_UP;
 }
 void TILES_down()
 {
-    //if (piso < 27) piso++;
     direccion = D_DOWN;
 }
 void TILES_right()
 {
-    //if (piso < 27) piso++;
     direccion = D_RIGHT;
 }
 void TILES_scroll_up()
 {
-    for (int i = 0; i <= ULTIMO_TILE; i++)
+    if (wait() == FALSE)
     {
-        if (tiles_y[i] >= piso)
+        for (int i = 0; i <= ULTIMO_TILE; i++)
         {
-            tiles_y[i]--;
-            VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_WHITE), i, tiles_y[i]);
+            if (tiles_y[i] >= piso && tiles_y[i] > TECHO)
+            {
+                tiles_y[i]--;
+                VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_WHITE), i, tiles_y[i]);
+            }
         }
+        piso = tiles_y[ULTIMO_TILE];
     }
-    piso = tiles_y[ULTIMO_TILE];
 }
-void TILES_move()
-{
-    //if (direccion == D_NULL)        return;
 
+int wait()
+{
+    delay_count++;
     if (delay_count >= delay)
     {
         delay_count = 0;
+        return FALSE;
+    }
+    return TRUE;
+}
+void TILES_move()
+{
+    if (direccion == D_NULL)
+    {
+        return;
+    }
 
-        if (direccion == D_UP || direccion == D_DOWN)
+    if (wait() == FALSE)
+    {
+
+        if (direccion == D_UP && piso > TECHO)
         {
-            piso += direccion;
+            piso--;
+            tiles_direction[ULTIMO_TILE] = direccion; // el ultimo tile lleva la direccion actual
+        }
+        if (direccion == D_DOWN && piso < PISO)
+        {
+            piso++;
+            tiles_direction[ULTIMO_TILE] = direccion; // el ultimo tile lleva la direccion actual
         }
 
         tiles_y[ULTIMO_TILE] = piso;
@@ -108,36 +125,50 @@ void TILES_move()
         //VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_BLACK), ULTIMO_TILE, tiles_y[ULTIMO_TILE]);
         //tiles_y[ULTIMO_TILE] = piso;
         //VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_WHITE), ULTIMO_TILE, tiles_y[ULTIMO_TILE]);
-
-        for (int i = 0; i < NUM_TILES - 1; i++)
-        {
-            if (tiles_y[i] != tiles_y[i + 1] && direccion != D_NULL)
-            {
-                if (tiles_y[i] < tiles_y[i + 1])
-                {
-                    VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_BLACK), i, tiles_y[i]);
-                }
-                tiles_y[i] = tiles_y[i + 1];
-                VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_WHITE), i, tiles_y[i]);
-            }
-        }
+        avanzar();
+        //avanzar();
     }
-    else
+}
+static void avanzar()
+{
+    // esto se ejecuta para todas los tiles de arriba
+    for (int i = 0; i < ULTIMO_TILE; i++)
     {
-        delay_count++;
+        //if (tiles_y[i] != tiles_y[i + 1] && direccion != D_NULL)
+        if (direccion != D_NULL)
+        {
+            //if (tiles_y[i] < tiles_y[i + 1])            {
+            // "borro" el tile de arriba
+            VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_BLACK), i, tiles_y[i]);
+            //}
+            tiles_y[i] = tiles_y[i + 1];                 // rotata posiciones
+            tiles_direction[i] = tiles_direction[i + 1]; // rotates direccion en ese momento
+                                                         //VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_WHITE), i, tiles_y[i]);
+
+            // esto se ejecuta para todas los tiles de arriba
+             rotate =  tiles_direction[i] < 0; // tambien rota los cuadrados, pero se ve igual
+            VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, rotate, tiles_spahe[rotate]), i, tiles_y[i]);
+            //VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, tiles_direction[i]), 5, 5);
+            //VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, rotate, tiles_direction[i]), 6, 6);
+        }
+        pinta_posicion();
     }
-    pinta_posicion();
+    // VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, tiles_direction[ULTIMO_TILE]), ULTIMO_TILE, tiles_y[ULTIMO_TILE]);
 }
 static void pinta_posicion()
 {
-    char cadena1[32];
+    /*   char cadena1[32];
     sprintf(cadena1, "x:  %4d", x);
     VDP_drawText(cadena1, 2, 23);
 
+    */
     char cadena2[32];
-    sprintf(cadena2, "tiles_y[x]:  %4d", tiles_y[x]);
-    VDP_drawText(cadena2, 2, 24);
+    sprintf(cadena2, "rotate %4d", rotate);
+    VDP_drawText(cadena2, 2, 19);
 
-    sprintf(cadena2, "piso:  %4d", piso);
-    VDP_drawText(cadena2, 2, 25);
+    for (int i = 0; i <= ULTIMO_TILE; i++)
+    {
+        sprintf(cadena2, "y,top[%d]:  %4d - %4d", i, tiles_y[i], tiles_direction[i]);
+        VDP_drawText(cadena2, 2, 20 + i);
+    }
 }

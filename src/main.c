@@ -1,8 +1,9 @@
 #include <genesis.h>
 #include <tiles.h>
+#include <test.h>
 
-//declaracion de funciones
 static void handleInput();
+
 int main()
 {
 
@@ -14,22 +15,16 @@ int main()
 
     TILES_init();
     //VDP_setTextPlan(PLAN_B);
-    int speed = 1;
-    int offset = 0;
     while (TRUE)
     {
-        offset += speed;
-        if (offset >= 512)
-        {
-            offset = 0;
-        }
 
         //VDP_setHorizontalScroll(PLAN_A, -offset);
-        VDP_showFPS(TRUE);
+        //VDP_showFPS(TRUE);
         VDP_showCPULoad();
         //SPR_update();
         handleInput();
         TILES_move();
+        //TEST_main();
         VDP_waitVSync();
     }
 
@@ -58,5 +53,4 @@ static void handleInput()
     {
         TILES_scroll_up();
     }
-
 }

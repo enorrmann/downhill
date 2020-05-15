@@ -2,7 +2,7 @@
 #define D_UP -1
 #define D_NULL 0
 #define D_DOWN 1
-#define D_RIGHT 2
+#define D_RIGHT -2
 
 typedef struct _Bar
 {

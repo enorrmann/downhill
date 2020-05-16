@@ -76,8 +76,9 @@ void TILES_down()
 }
 void TILES_right()
 {
-    if (direccion==D_SCROLL_UP){
-        
+    if (direccion == D_SCROLL_UP)
+    {
+        piso++;
     }
     direccion = D_RIGHT;
 }

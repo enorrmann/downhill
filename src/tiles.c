@@ -6,13 +6,16 @@
 #define TILE_DIAG 6
 #define TILE_DIAG_DOWN 7
 
-#define NUM_TILES 26
+#define NUM_TILES 6
 #define ULTIMO_TILE NUM_TILES - 1
 
 #define TECHO 10
-#define PISO 27
+#define PISO 28
 
-static void pinta_posicion();
+s8 debug = 1;
+char debug_string[32];
+
+static void TILES_DEBUG();
 static void avanzar();
 static int wait();
 
@@ -27,7 +30,7 @@ const u32 tileDiag[8] =
         0xFFFFFFF0,
         0xFFFFFFFF};
 
-u8 delay = 3;
+u8 delay = 6;
 u8 delay_count = 0;
 s8 direccion = D_NULL;
 u8 vuelta = 0;
@@ -36,17 +39,17 @@ u8 rotate = 0;
 
 u8 tiles_y[NUM_TILES];
 s8 tiles_direction[NUM_TILES];
-s8 tiles_spahe[4];
+s8 tiles_shape[4];
 
 void TILES_init()
 {
     //VDP_setBackgroundColor(55);
     VDP_loadTileData((const u32 *)tileDiag, TILE_DIAG, 1, 0);
     //VDP_loadTileData((const u32 *)tileDiagDown, TILE_DIAG_DOWN, 1, 0);
-    tiles_spahe[0] = TILE_DIAG;  // up
-    tiles_spahe[1] = TILE_WHITE; // null
-    tiles_spahe[2] = TILE_DIAG;  // down
-    tiles_spahe[3] = TILE_WHITE; // right
+    tiles_shape[0] = TILE_DIAG;  // up
+    tiles_shape[1] = TILE_WHITE; // null
+    tiles_shape[2] = TILE_DIAG;  // down
+    tiles_shape[3] = TILE_WHITE; // right
 
     for (int i = 0; i < NUM_TILES; i++)
     {
@@ -73,6 +76,9 @@ void TILES_down()
 }
 void TILES_right()
 {
+    if (direccion==D_SCROLL_UP){
+        
+    }
     direccion = D_RIGHT;
 }
 void TILES_scroll_up()
@@ -81,14 +87,19 @@ void TILES_scroll_up()
     {
         for (int i = 0; i <= ULTIMO_TILE; i++)
         {
+
+            // pintar todo lo que este > piso, o sea mas abajo del piso
             if (tiles_y[i] >= piso && tiles_y[i] > TECHO)
             {
-                tiles_y[i]--;
+                tiles_direction[i] = D_SCROLL_UP;
                 VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_WHITE), i, tiles_y[i]);
+                tiles_y[i]--;
             }
         }
         piso = tiles_y[ULTIMO_TILE];
     }
+    if (debug)
+        TILES_DEBUG();
 }
 
 int wait()
@@ -110,7 +121,6 @@ void TILES_move()
 
     if (wait() == FALSE)
     {
-
         if (direccion == D_UP && piso > TECHO)
         {
             piso--;
@@ -153,29 +163,34 @@ static void avanzar()
 
             // esto se ejecuta para todas los tiles de arriba
             rotate = tiles_direction[i] == D_UP;
-            VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, rotate, tiles_spahe[tiles_direction[i] + 1]), i, tiles_y[i]);
+            VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, rotate, tiles_shape[tiles_direction[i] + 1]), i, tiles_y[i]);
 
             //VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, tiles_direction[i]), 5, 5);
             //VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, rotate, tiles_direction[i]), 6, 6);
         }
-        //pinta_posicion();
+        if (debug)
+            TILES_DEBUG();
     }
     // VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, tiles_direction[ULTIMO_TILE]), ULTIMO_TILE, tiles_y[ULTIMO_TILE]);
 }
-static void pinta_posicion()
+static void TILES_DEBUG()
 {
     /*   char cadena1[32];
     sprintf(cadena1, "x:  %4d", x);
     VDP_drawText(cadena1, 2, 23);
 
     */
-    char cadena2[32];
-    sprintf(cadena2, "rotate %4d", rotate);
-    VDP_drawText(cadena2, 2, 19);
+    VDP_drawText("x", 10, 10);
+
+    sprintf(debug_string, "direccion %4d", direccion);
+    VDP_drawText(debug_string, 20, 9);
+
+    sprintf(debug_string, "piso %4d", piso);
+    VDP_drawText(debug_string, 20, 10);
 
     for (int i = 0; i <= ULTIMO_TILE; i++)
     {
-        sprintf(cadena2, "y,top[%d]:  %4d , %4d", i, tiles_y[i], tiles_direction[i]);
-        VDP_drawText(cadena2, 2, 20 + i);
+        sprintf(debug_string, "y,d,s %2d,%2d,%2d,%2d", i, tiles_y[i], tiles_direction[i], tiles_shape[tiles_direction[i] + 1]);
+        VDP_drawText(debug_string, 20, 11 + i);
     }
 }

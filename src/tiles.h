@@ -3,6 +3,7 @@
 #define D_NULL 0
 #define D_DOWN 1
 #define D_RIGHT 2
+#define D_SCROLL_UP 3
 
 typedef struct _Bar
 {

@@ -6,18 +6,20 @@
 #define TILE_DIAG 6
 #define TILE_DIAG_DOWN 7
 
-#define NUM_TILES 6
+#define NUM_TILES 40
 #define ULTIMO_TILE NUM_TILES - 1
 
 #define TECHO 10
 #define PISO 28
 
-s8 debug = 1;
+s8 debug = 0;
 char debug_string[32];
 
 static void TILES_DEBUG();
 static void avanzar();
 static int wait();
+static void ajustar_piso();
+static void TILES_do_scroll_up();
 
 const u32 tileDiag[8] =
     {
@@ -30,9 +32,10 @@ const u32 tileDiag[8] =
         0xFFFFFFF0,
         0xFFFFFFFF};
 
-u8 delay = 6;
+u8 delay = 5;
 u8 delay_count = 0;
 s8 direccion = D_NULL;
+s8 last_direccion = D_NULL;
 u8 vuelta = 0;
 s8 piso = 25;
 u8 rotate = 0;
@@ -50,7 +53,7 @@ void TILES_init()
     tiles_shape[1] = TILE_WHITE; // null
     tiles_shape[2] = TILE_DIAG;  // down
     tiles_shape[3] = TILE_WHITE; // right
-
+    tiles_shape[4] = TILE_WHITE; // SCROLL_UP
 
     for (int i = 0; i < NUM_TILES; i++)
     {
@@ -79,22 +82,27 @@ void TILES_right()
 {
     direccion = D_RIGHT;
 }
+
 void TILES_scroll_up()
 {
-
-    if (wait() == FALSE)
+    direccion = D_SCROLL_UP;
+}
+static void TILES_do_scroll_up()
+{
+    last_direccion = D_SCROLL_UP;
+    for (int i = 0; i <= ULTIMO_TILE; i++)
     {
-        for (int i = 0; i <= ULTIMO_TILE; i++)
+        // pintar todo lo que este > piso, o sea mas abajo del piso
+        if (tiles_y[i] >= piso && tiles_y[i] >= TECHO)
         {
-            // pintar todo lo que este > piso, o sea mas abajo del piso
-            if (tiles_y[i] >= piso && tiles_y[i] >= TECHO)
-            {
-                VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_WHITE), i, tiles_y[i]);
-                tiles_y[i]--;
-            }
+            // LA DIRECCION DETERMINA EL SHAPE
+            tiles_direction[i] = D_SCROLL_UP;
+            VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_WHITE), i, tiles_y[i]);
+            tiles_y[i]--;
         }
-        piso = tiles_y[ULTIMO_TILE];
     }
+    piso = tiles_y[ULTIMO_TILE];
+
     if (debug)
         TILES_DEBUG();
 }
@@ -118,28 +126,15 @@ void TILES_move()
 
     if (wait() == FALSE)
     {
-        if (direccion == D_UP && piso > TECHO)
+
+        if (direccion == D_SCROLL_UP)
         {
-            piso--;
-            tiles_direction[ULTIMO_TILE] = direccion; // el ultimo tile lleva la direccion actual
-        }
-        if (direccion == D_DOWN && piso < PISO)
-        {
-            piso++;
-            tiles_direction[ULTIMO_TILE] = direccion; // el ultimo tile lleva la direccion actual
-        }
-        if (direccion == D_RIGHT)
-        {
-            tiles_direction[ULTIMO_TILE] = direccion; // el ultimo tile lleva la direccion actual
+            TILES_do_scroll_up();
+            return;
         }
 
-        tiles_y[ULTIMO_TILE] = piso;
-
-        //VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_BLACK), ULTIMO_TILE, tiles_y[ULTIMO_TILE]);
-        //tiles_y[ULTIMO_TILE] = piso;
-        //VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_WHITE), ULTIMO_TILE, tiles_y[ULTIMO_TILE]);
+        ajustar_piso();
         avanzar();
-        //avanzar();
     }
 }
 static void avanzar()
@@ -150,7 +145,7 @@ static void avanzar()
         //if (tiles_y[i] != tiles_y[i + 1] && direccion != D_NULL)
         if (1) //if (direccion != D_NULL)
         {
-            //if (tiles_y[i] < tiles_y[i + 1])            {
+
             // "borro" el tile de arriba
             VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_BLACK), i, tiles_y[i]);
             //}
@@ -161,14 +156,40 @@ static void avanzar()
             // esto se ejecuta para todas los tiles de arriba
             rotate = tiles_direction[i] == D_UP;
             VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, rotate, tiles_shape[tiles_direction[i] + 1]), i, tiles_y[i]);
-
-            //VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, tiles_direction[i]), 5, 5);
-            //VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, rotate, tiles_direction[i]), 6, 6);
         }
         if (debug)
             TILES_DEBUG();
     }
-    // VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, tiles_direction[ULTIMO_TILE]), ULTIMO_TILE, tiles_y[ULTIMO_TILE]);
+}
+
+static void ajustar_piso()
+{
+
+    if (direccion == D_UP && piso > TECHO)
+    {
+        piso--;
+    }
+
+    if (direccion == D_DOWN && last_direccion != D_RIGHT && piso < PISO)
+    {
+        piso++;
+    }
+
+    // si la direccion anterior era scroll, acomodar el piso
+    if (last_direccion == D_SCROLL_UP)
+    {
+        piso++;
+        if (piso < TECHO)
+            piso = TECHO;
+    }
+    if (direccion == D_RIGHT && last_direccion == D_DOWN)
+    {
+        piso++;
+    }
+
+    last_direccion = direccion;
+    tiles_y[ULTIMO_TILE] = piso;
+    tiles_direction[ULTIMO_TILE] = direccion; // el ultimo tile lleva la direccion actual
 }
 static void TILES_DEBUG()
 {
@@ -179,15 +200,15 @@ static void TILES_DEBUG()
     */
     VDP_drawText("x", 10, 10);
 
-    sprintf(debug_string, "direccion %4d", direccion);
+    sprintf(debug_string, "last_direccion %4d", last_direccion);
     VDP_drawText(debug_string, 20, 9);
 
-    sprintf(debug_string, "piso %4d", piso);
+    sprintf(debug_string, "direccion %4d", direccion);
     VDP_drawText(debug_string, 20, 10);
 
-    for (int i = 0; i <= ULTIMO_TILE; i++)
+    /*    for (int i = 0; i <= ULTIMO_TILE; i++)
     {
         sprintf(debug_string, "y,d,s %2d,%2d,%2d,%2d", i, tiles_y[i], tiles_direction[i], tiles_shape[tiles_direction[i] + 1]);
         VDP_drawText(debug_string, 20, 11 + i);
-    }
+    }*/
 }

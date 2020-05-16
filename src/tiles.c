@@ -51,6 +51,7 @@ void TILES_init()
     tiles_shape[2] = TILE_DIAG;  // down
     tiles_shape[3] = TILE_WHITE; // right
 
+
     for (int i = 0; i < NUM_TILES; i++)
     {
         tiles_y[i] = piso;
@@ -76,23 +77,18 @@ void TILES_down()
 }
 void TILES_right()
 {
-    if (direccion == D_SCROLL_UP)
-    {
-        piso++;
-    }
     direccion = D_RIGHT;
 }
 void TILES_scroll_up()
 {
+
     if (wait() == FALSE)
     {
         for (int i = 0; i <= ULTIMO_TILE; i++)
         {
-
             // pintar todo lo que este > piso, o sea mas abajo del piso
-            if (tiles_y[i] >= piso && tiles_y[i] > TECHO)
+            if (tiles_y[i] >= piso && tiles_y[i] >= TECHO)
             {
-                tiles_direction[i] = D_SCROLL_UP;
                 VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_WHITE), i, tiles_y[i]);
                 tiles_y[i]--;
             }

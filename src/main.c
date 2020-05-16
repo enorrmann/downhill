@@ -3,6 +3,7 @@
 #include <test.h>
 
 static void handleInput();
+int offset = 0;
 
 int main()
 {
@@ -17,7 +18,12 @@ int main()
     //VDP_setTextPlan(PLAN_B);
     while (TRUE)
     {
+        offset++;
 
+        if (offset == 512)
+        {
+            offset = 0;
+        }
         //VDP_setHorizontalScroll(PLAN_A, -offset);
         //VDP_showFPS(TRUE);
         VDP_showCPULoad();

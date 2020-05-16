@@ -53,7 +53,7 @@ void init()
     VDP_loadTileData((const u32 *)tile, MI_TILE, 1, 0);
     VDP_loadTileData((const u32 *)tile2, MI_TILE_2, 1, 0);
 }
-int TEST_main()
+void TEST_main()
 {
 
     if (wait())
@@ -91,5 +91,5 @@ int TEST_main()
         vuelta_test = 0;
     }
 
-    return 0;
+    
 }

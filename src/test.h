@@ -1,1 +1,1 @@
-int TEST_main();
+void TEST_main();

@@ -2,12 +2,14 @@
 
 #define TILE_WHITE 9
 #define TILE_BLACK 0
-//#define TILE_DIAG_UP 6
-#define TILE_DIAG 6
-#define TILE_DIAG_DOWN 7
+#define TILE_DIAG 7
+#define TILE_DIAG_2 7
+#define TILE_DIAG_3 8
 
-#define NUM_TILES 40
+#define NUM_TILES 15
 #define ULTIMO_TILE NUM_TILES - 1
+#define DELAY 3
+#define FACTOR 2
 
 #define TECHO 10
 #define PISO 28
@@ -32,12 +34,33 @@ const u32 tileDiag[8] =
         0xFFFFFFF0,
         0xFFFFFFFF};
 
-u8 delay = 5;
+const u32 tileDiag2[8] =
+    {
+        0x00000000,
+        0xFF000000,
+        0xFFFF0000,
+        0xFFFFFF00,
+        0xFFFFFFFF,
+        0xFFFFFFFF,
+        0xFFFFFFFF,
+        0xFFFFFFFF};
+
+const u32 tileDiag3[8] =
+    {
+        0x00000000,
+        0x00000000,
+        0x00000000,
+        0x00000000,
+        0xF0000000,
+        0xFF000000,
+        0xFFFF0000,
+        0xFFFFFF00};
+
 u8 delay_count = 0;
 s8 direccion = D_NULL;
 s8 last_direccion = D_NULL;
 u8 vuelta = 0;
-s8 piso = 25;
+s8 piso = PISO;
 u8 rotate = 0;
 
 u8 tiles_y[NUM_TILES];
@@ -48,6 +71,8 @@ void TILES_init()
 {
     //VDP_setBackgroundColor(55);
     VDP_loadTileData((const u32 *)tileDiag, TILE_DIAG, 1, 0);
+    VDP_loadTileData((const u32 *)tileDiag2, TILE_DIAG_2, 1, 0);
+    VDP_loadTileData((const u32 *)tileDiag3, TILE_DIAG_3, 1, 0);
     //VDP_loadTileData((const u32 *)tileDiagDown, TILE_DIAG_DOWN, 1, 0);
     tiles_shape[0] = TILE_DIAG;  // up
     tiles_shape[1] = TILE_WHITE; // null
@@ -90,6 +115,7 @@ void TILES_scroll_up()
 static void TILES_do_scroll_up()
 {
     last_direccion = D_SCROLL_UP;
+
     for (int i = 0; i <= ULTIMO_TILE; i++)
     {
         // pintar todo lo que este > piso, o sea mas abajo del piso
@@ -110,7 +136,7 @@ static void TILES_do_scroll_up()
 int wait()
 {
     delay_count++;
-    if (delay_count >= delay)
+    if (delay_count >= DELAY)
     {
         delay_count = 0;
         return FALSE;
@@ -139,24 +165,34 @@ void TILES_move()
 }
 static void avanzar()
 {
+
     // esto se ejecuta para todas los tiles de arriba
     for (int i = 0; i < ULTIMO_TILE; i++)
     {
+        int x = i * FACTOR;
+
         //if (tiles_y[i] != tiles_y[i + 1] && direccion != D_NULL)
-        if (1) //if (direccion != D_NULL)
+        //        if (1) //if (direccion != D_NULL)
+        //      {
+
+        // "borro" el tile de arriba si va para abajo, sino, blanco abajo
+        if (tiles_y[i] < tiles_y[i + 1])
         {
-
-            // "borro" el tile de arriba
-            VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_BLACK), i, tiles_y[i]);
-            //}
-            tiles_y[i] = tiles_y[i + 1];                 // rotata posiciones
-            tiles_direction[i] = tiles_direction[i + 1]; // rotates direccion en ese momento
-                                                         //VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_WHITE), i, tiles_y[i]);
-
-            // esto se ejecuta para todas los tiles de arriba
-            rotate = tiles_direction[i] == D_UP;
-            VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, rotate, tiles_shape[tiles_direction[i] + 1]), i, tiles_y[i]);
+            VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_BLACK), x, tiles_y[i]);
         }
+        else
+        {
+            VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_WHITE), x, tiles_y[i]);
+        }
+        tiles_y[i] = tiles_y[i + 1];                 // rotata posiciones
+        tiles_direction[i] = tiles_direction[i + 1]; // rotates direccion en ese momento
+                                                     //VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_WHITE), i, tiles_y[i]);
+
+        // ESTE ES EL QUE DIBUJA EL KEY TILE, O SEA EL TILE QUE MANDA
+        // esto se ejecuta para todas los tiles de arriba
+        rotate = tiles_direction[i] == D_UP;
+        VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, rotate, tiles_shape[tiles_direction[i] + 1]), x, tiles_y[i]);
+        //  }
         if (debug)
             TILES_DEBUG();
     }

@@ -17,7 +17,7 @@ typedef struct _Bar
 } Bar;
 
 void TILES_init();
-void TILES_move();
+int TILES_move();
 void TILES_up();
 void TILES_down();
 void TILES_halt();

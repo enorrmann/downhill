@@ -13,7 +13,7 @@
 #define PLAYER_X 3
 
 #define TECHO 10
-#define PISO 26
+#define PISO 28
 
 s8 debug = 0;
 char debug_string[32];

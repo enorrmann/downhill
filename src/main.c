@@ -77,5 +77,6 @@ static void MAIN_DEBUG()
 
 static void movePlayer(int yInTiles)
 {
-    SPR_setPosition(player, 60, yInTiles * 8 - 30 );
+    SPR_setAnim(player, 0);
+    SPR_setPosition(player, 60, yInTiles * 8 - 30);
 }

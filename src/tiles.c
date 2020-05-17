@@ -6,7 +6,7 @@
 #define TILE_DIAG_2 7
 #define TILE_DIAG_3 8
 
-#define NUM_TILES 5
+#define NUM_TILES 15
 #define ULTIMO_TILE NUM_TILES - 1
 #define DELAY 3
 #define FACTOR 2
@@ -62,6 +62,7 @@ s8 last_direccion = D_NULL;
 u8 vuelta = 0;
 s8 piso = PISO;
 u8 rotate = 0;
+u8 tiles_offset = 0;
 
 u8 tiles_y[NUM_TILES];
 s8 tiles_direction[NUM_TILES];
@@ -168,13 +169,20 @@ void TILES_move()
         avanzar();
     }
 }
+
+// se ejecuta cada frames / delay veces
 static void avanzar()
 {
-
+    tiles_offset++;
+    if (tiles_offset > 1)
+    {
+        tiles_offset = 0;
+    }
     // esto se ejecuta para todas los tiles de arriba
     for (int i = 0; i < ULTIMO_TILE; i++)
     {
-        int x = i * FACTOR;
+        // aca puedor ir variando el punto x de inicio, una vuelta x, una vuetla x+1
+        int x = i * FACTOR + tiles_offset;
 
         //if (tiles_y[i] != tiles_y[i + 1] && direccion != D_NULL)
         //        if (1) //if (direccion != D_NULL)
@@ -183,11 +191,13 @@ static void avanzar()
         // "borro" el tile de arriba si va para abajo, sino, blanco abajo
         if (tiles_y[i] < tiles_y[i + 1])
         {
-          //  VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_BLACK), x, tiles_y[i]);
+            VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_BLACK), x, tiles_y[i]);
+            VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_BLACK), x, tiles_y[i]-1);
+            //VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_BLACK), x, tiles_y[i]+1);
         }
         else
         {
-           // VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_WHITE), x, tiles_y[i]);
+            VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_WHITE), x, tiles_y[i]);
         }
         tiles_y[i] = tiles_y[i + 1];                 // rotata posiciones
         tiles_direction[i] = tiles_direction[i + 1]; // rotates direccion en ese momento
@@ -198,8 +208,10 @@ static void avanzar()
         rotate = tiles_direction[i] == D_UP;
         //rotate = 0 ;
         VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, rotate, tiles_shape[tiles_direction[i] + 1]), x, tiles_y[i]);
+
         //int inter_x = x + 1 * direccion;
-        VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, rotate, tiles_next_shape[tiles_direction[i] + 1]), x+1, tiles_y[i] + 1*direccion);
+        // tile de interpolado
+        //VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, rotate, tiles_next_shape[tiles_direction[i] + 1]), x+1, tiles_y[i] + 1*direccion);
         //  }
         if (debug)
             TILES_DEBUG();

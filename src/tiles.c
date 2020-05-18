@@ -1,6 +1,6 @@
 #include <tiles.h>
 
-#define TILE_WHITE 9
+#define TILE_WHITE 15
 #define TILE_BLACK 0
 #define TILE_DIAG 7
 #define TILE_DIAG_2 7
@@ -83,10 +83,10 @@ s8 tiles_next_shape[4];
 void TILES_init()
 {
     //VDP_setBackgroundColor(55);
-    VDP_loadTileData((const u32 *)tileDiag, TILE_DIAG, 1, 0);
+    /*VDP_loadTileData((const u32 *)tileDiag, TILE_DIAG, 1, 0);
     VDP_loadTileData((const u32 *)tileDiag2, TILE_DIAG_2, 1, 0);
     VDP_loadTileData((const u32 *)tileDiag3, TILE_DIAG_3, 1, 0);
-    VDP_loadTileData((const u32 *)tileStick, TILE_WHITE, 1, 0);
+    VDP_loadTileData((const u32 *)tileStick, TILE_WHITE, 1, 0);*/
     //VDP_loadTileData((const u32 *)tileDiagDown, TILE_DIAG_DOWN, 1, 0);
     tiles_shape[0] = TILE_DIAG;  // up
     tiles_shape[1] = TILE_WHITE; // null

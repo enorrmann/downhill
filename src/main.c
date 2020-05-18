@@ -2,42 +2,87 @@
 #include <tiles.h>
 #include <sprites.h>
 
+#define PAL_BG_A PAL0
+#define PAL_PLAYER PAL1
+#define DEBUG 0
+
 static void MAIN_DEBUG();
 static void handleInput();
 static void movePlayer(int yInTiles);
 int offset = 0;
+int scroll = 0;
+
 int player_x = 0;
+
+//cuenta de tiles en VRAM
+u16 ind;
+
 Sprite *player;
+Sprite *moon;
 
 int main()
 {
 
     VDP_setScreenWidth320();
+    SPR_init(0, 0, 0);
+
+    //backgrounds
+    ind = TILE_USERINDEX;
+    VDP_setPalette(PAL_BG_A, bga_image.palette->data);
+    // el segundo parametro es PRIO TRUE
+    VDP_drawImageEx(PLAN_B, &bga_image, TILE_ATTR_FULL(PAL_BG_A, TRUE, FALSE, FALSE, ind), 0, 0, FALSE, TRUE);
+    ind += bga_image.tileset->numTile;
+
+    //while (TRUE){};
+
     VDP_setScrollingMode(HSCROLL_PLANE, VSCROLL_PLANE);
 
-    SPR_init(0, 0, 0);
-    player = SPR_addSprite(&klonoa, 100, 100, TILE_ATTR(PAL1, 0, FALSE, FALSE));
-    VDP_setPalette(PAL1, klonoa.palette->data);
+    VDP_setPalette(PAL_PLAYER, klonoa.palette->data);
+    player = SPR_addSprite(&klonoa, 100, 100, TILE_ATTR(PAL_PLAYER, 0, FALSE, FALSE));
+    SPR_setPriorityAttribut(player, TRUE);
+
+    moon = SPR_addSprite(&moon_image, 100, 100, TILE_ATTR(PAL_BG_A, 0, FALSE, FALSE));
+    SPR_setPriorityAttribut(moon, FALSE);
+
+    SPR_setPosition(moon, 200, 20);
 
     TILES_init();
     //VDP_setTextPlan(PLAN_B);
     while (TRUE)
     {
-        /*offset++;
+        offset++;
 
-        if (offset == 512)
+        if (offset == 512 || scroll == 512)
         {
             offset = 0;
-        }*/
-        //VDP_setHorizontalScroll(PLAN_A, -offset);
+        }
+
+        if (scroll == 512)
+        {
+
+            scroll = 0;
+        }
+
+        // muevo cada 10
+        if (offset % 5 == 0)
+        {
+            scroll++;
+        }
+        VDP_setHorizontalScroll(PLAN_B, -scroll);
+        SPR_setPosition(moon, 230, 150 - (scroll / 6));
+        //VDP_setVerticalScroll(PLAN_B, scroll);
         //VDP_showFPS(TRUE);
-        VDP_showCPULoad();
         handleInput();
         player_x = TILES_move();
         movePlayer(player_x);
         SPR_update();
         //TEST_main();
-        MAIN_DEBUG();
+        if (DEBUG)
+        {
+
+            MAIN_DEBUG();
+        }
+
         VDP_waitVSync();
     }
 
@@ -70,6 +115,8 @@ static void handleInput()
 
 static void MAIN_DEBUG()
 {
+    VDP_showCPULoad();
+
     char debug_string[32];
     sprintf(debug_string, "player_x %4d", player_x);
     VDP_drawText(debug_string, 20, 9);

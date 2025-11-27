@@ -9,7 +9,7 @@ static void block_plain_init();
 void floor_init()
 {
 
-    VDP_setPalette(PAL1, ramp.palette->data);
+    PAL_setPalette(PAL1, ramp.palette->data,DMA);
 
     block_plain_init();
 

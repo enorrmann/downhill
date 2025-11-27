@@ -24,20 +24,22 @@ int main()
 {
 
     VDP_setScreenWidth320();
-    SPR_init(0, 0, 0);
+    //SPR_init(0, 0, 0);
+    SPR_init();
 
     //backgrounds
-    ind = TILE_USERINDEX;
-    VDP_setPalette(PAL_BG_A, bga_image.palette->data);
+    ind = TILE_USER_INDEX;
+    PAL_setPalette(PAL_BG_A, bga_image.palette->data,DMA);
+
     // el segundo parametro es PRIO TRUE
-    VDP_drawImageEx(PLAN_B, &bga_image, TILE_ATTR_FULL(PAL_BG_A, TRUE, FALSE, FALSE, ind), 0, 0, FALSE, TRUE);
+    VDP_drawImageEx(VDP_PLAN_B, &bga_image, TILE_ATTR_FULL(PAL_BG_A, TRUE, FALSE, FALSE, ind), 0, 0, FALSE, TRUE);
     ind += bga_image.tileset->numTile;
 
     //while (TRUE){};
 
     VDP_setScrollingMode(HSCROLL_PLANE, VSCROLL_PLANE);
 
-    VDP_setPalette(PAL_PLAYER, klonoa.palette->data);
+    PAL_setPalette(PAL_PLAYER, klonoa.palette->data,DMA);
     player = SPR_addSprite(&klonoa, 100, 100, TILE_ATTR(PAL_PLAYER, 0, FALSE, FALSE));
     SPR_setPriorityAttribut(player, TRUE);
 
@@ -68,7 +70,7 @@ int main()
         {
             scroll++;
         }
-        VDP_setHorizontalScroll(PLAN_B, -scroll);
+        VDP_setHorizontalScroll(VDP_PLAN_B, -scroll);
         SPR_setPosition(moon, 230, 150 - (scroll / 6));
         //VDP_setVerticalScroll(PLAN_B, scroll);
         //VDP_showFPS(TRUE);

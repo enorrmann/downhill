@@ -143,7 +143,7 @@ static void TILES_do_scroll_up()
         {
             // LA DIRECCION DETERMINA EL SHAPE
             tiles_direction[i] = D_SCROLL_UP;
-            VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_WHITE), x, tiles_y[i]);
+            VDP_setTileMapXY(VDP_PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_WHITE), x, tiles_y[i]);
             tiles_y[i]--;
         }
     }
@@ -202,7 +202,7 @@ static void avanzar()
         if (tiles_y[i] < tiles_y[i + 1])
         {
 
-            VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_BLACK), x, tiles_y[i]);
+            VDP_setTileMapXY(VDP_PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_BLACK), x, tiles_y[i]);
 
             // borra un par mas
             //VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 0, TILE_BLACK), x, tiles_y[i] - 1);
@@ -223,7 +223,7 @@ static void avanzar()
         //rotate = 0 ;
         int shape = tiles_shape[tiles_direction[i] + 1];
         shape = TILE_WHITE;
-        VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, rotate, shape), x, tiles_y[i]);
+        VDP_setTileMapXY(VDP_PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, rotate, shape), x, tiles_y[i]);
 
         //int inter_x = x + 1 * direccion;
         // tile de interpolado

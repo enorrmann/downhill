@@ -61,7 +61,7 @@ void TEST_main()
         return;
     }
 
-    VDP_setTileMapXY(PLAN_A, tiles_array[vuelta_test], 1, 5);
+    VDP_setTileMapXY(VDP_PLAN_A, tiles_array[vuelta_test], 1, 5);
 
     //Dibuja el tile usando TILE_ATTR_FULL()
     //primer parámetro: paleta. PAL2 = paleta de verdes
@@ -69,21 +69,21 @@ void TEST_main()
     //tercer parámetro: volteo vertical. 1 = vflip
     //cuarto parámetro: volteo horizon. 0 = no hflip
     //quinto parámetro: tile referenciado.
-    VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL2, 0, 0, 0, tiles_array[vuelta_test]), 3, 5);
+    VDP_setTileMapXY(VDP_PLAN_A, TILE_ATTR_FULL(PAL2, 0, 0, 0, tiles_array[vuelta_test]), 3, 5);
 
     //Dibuja 2 veces el tile, la primera vez en el plano B con pal 0 (grises)
     //la segunda en el plano A con pal1 (rojos),
-    VDP_setTileMapXY(PLAN_B, TILE_ATTR_FULL(PAL0, 0, 0, 0, tiles_array[vuelta_test]), 5, 5);
-    VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL1, 0, 0, 0, tiles_array[vuelta_test]), 5, 5);
+    VDP_setTileMapXY(VDP_PLAN_B, TILE_ATTR_FULL(PAL0, 0, 0, 0, tiles_array[vuelta_test]), 5, 5);
+    VDP_setTileMapXY(VDP_PLAN_A, TILE_ATTR_FULL(PAL1, 0, 0, 0, tiles_array[vuelta_test]), 5, 5);
 
     //Dibuja 2 veces el tile, igual que antes pero el tile del plano B con alta prioridad
-    VDP_setTileMapXY(PLAN_B, TILE_ATTR_FULL(PAL0, 1, 0, 0, tiles_array[vuelta_test-1]), 7, 5);
-    VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL1, 0, 0, 0, tiles_array[vuelta_test]), 7, 5);
+    VDP_setTileMapXY(VDP_PLAN_B, TILE_ATTR_FULL(PAL0, 1, 0, 0, tiles_array[vuelta_test-1]), 7, 5);
+    VDP_setTileMapXY(VDP_PLAN_A, TILE_ATTR_FULL(PAL1, 0, 0, 0, tiles_array[vuelta_test]), 7, 5);
 
     //dibuja la tile volteada horizontalmente, verticalmente y luego ambas a la vez
-    VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 1, tiles_array[vuelta_test]), 3, 8);
-    VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 1, 0, tiles_array[vuelta_test-1]), 5, 8);
-    VDP_setTileMapXY(PLAN_A, TILE_ATTR_FULL(PAL0, 1, 1, 1, tiles_array[vuelta_test]), 7, 8);
+    VDP_setTileMapXY(VDP_PLAN_A, TILE_ATTR_FULL(PAL0, 1, 0, 1, tiles_array[vuelta_test]), 3, 8);
+    VDP_setTileMapXY(VDP_PLAN_A, TILE_ATTR_FULL(PAL0, 1, 1, 0, tiles_array[vuelta_test-1]), 5, 8);
+    VDP_setTileMapXY(VDP_PLAN_A, TILE_ATTR_FULL(PAL0, 1, 1, 1, tiles_array[vuelta_test]), 7, 8);
 
     vuelta_test++;
     if (vuelta_test > 2)
